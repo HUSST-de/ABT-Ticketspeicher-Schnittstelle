@@ -1,0 +1,537 @@
+openapi: 3.1.0
+info:
+  title: HUSST Tickethub API
+  description: |-
+    This API provides secure management of tickets associated with transit tokens. It supports:
+     - Storing and updating tickets.
+     - Retrieving ticket information for inspection and validation processes.
+     - Managing the full ticket lifecycle, including actions such as blocking, terminating (e.g., for non-payment), deleting, or reassigning a ticket to a different transit token.
+
+    Security model:
+      - Create, update, and delete operations (POST, PATCH, DELETE) require OAuth2 JWT Bearer Tokens combined with mutual TLS (mTLS).
+      - View and Validation operations (GET) require OAuth2 JWT Bearer Tokens combined with mutual TLS (mTLS).
+
+      Based on the provided certificates, it is determined which data (e.g., for which CCP) can be accessed and written.
+
+  version: 0.4.0
+  contact:
+    name: HUSST e.V.
+    email: info@husst.de
+  license:
+    name: CC BY 4.0
+    url: https://creativecommons.org/licenses/by/4.0/
+
+servers:
+  - url: /husst-api/v1
+
+paths:
+  /tickets:
+    post:
+      summary: Create new ticket for a transit token
+      operationId: createTicket
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: [create:ticket]
+          mtls: []
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          description: "Unique key to ensure idempotent ticket creation requests."
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketDeposit'
+      responses:
+        '201':
+          description: Ticket created successfully.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Conflict - Ticket already exists and idempotency key doesn't match
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    get:
+      summary: Retrieve all tickets to a transit token
+      description: >
+       Retrieve all tickets to a transit token. For inspection purposes, the `inspection` flag must be set to true and only the tickets valid today and recently expired are returned (within an implementation-defined tolerance window).
+       Tickets whose tokenType matches the specified value and whose transitToken matches according to the rules of that tokenType are returned.
+      operationId: getTickets
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: [view:token, validate:token]
+          mtls: []
+      parameters:
+        - in: query
+          name: transitToken
+          required: true
+          schema:
+            $ref: '#/components/schemas/Base64url'
+        - in: query
+          name: tokenType
+          required: true
+          schema:
+            $ref: '#/components/schemas/TokenType'
+        - in: query
+          name: inspection
+          schema:
+            type: boolean
+            description: > 
+              Flag to indicate if the request is for inspection purposes.
+              This flag is required to differentiate between normal retrieval and
+              inspection scenarios to enable statistical evaluations.
+            default: false
+      responses:
+        '200':
+          description: List of tickets associated with the given transit token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tickets'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /tickets/{ticketRef}:
+    parameters:
+      - in: path
+        name: ticketRef
+        required: true
+        schema:
+          $ref: '#/components/schemas/TicketRef'
+    get:
+      summary: Retrieve a ticket by its ticket reference
+      operationId: getTicket
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: [view:ticket]
+          mtls: []
+      responses:
+        '200':
+          description: List of tickets associated with the given transit token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    patch:
+      summary: Change attribute(s) of a single ticket identified by its ticket reference.
+      description: >
+        Change attribute(s) of a single ticket identified by its `ticketRef`. Requires the role of customer contract partner (CCP).
+      operationId: updateTicketByRef
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          description: "Unique key to ensure idempotent ticket update requests."
+          schema:
+            type: string
+            format: uuid
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: [update:ticket]
+          mtls: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TicketStatus'
+      responses:
+        '204':
+          description: Ticket updated successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+    delete: 
+      summary: Delete a single ticket identified by its ticket reference.
+      description: >
+        Delete a single ticket identified by its `ticketRef`. Requires the role of customer contract partner (CCP).
+      operationId: deleteTicketByRef
+      tags:
+        - Tickets
+      security:
+        - bearerAuth: [delete:ticket]
+          mtls: []
+      responses:
+        '204':
+          description: Ticket deleted successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /tokens:
+    post:
+      summary: Reassign tickets of the requesting CCP to a new transit token. The type of the transit token must be the same.
+      description: >
+        Reassign tickets of the requesting CCP to a new transit token. The type of the transit token must be the same.
+        If the type of the new transit token differs from the current known type, the operation fails with a 400 Bad Request.
+        This operation is typically used when a ticket needs to be moved to a different device or application.
+      operationId: replaceTransitToken
+      tags:
+        - Tokens
+      security:
+        - bearerAuth: [replace:token]
+          mtls: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - transitToken
+                - newTransitToken
+              properties:
+                transitToken:
+                  $ref: '#/components/schemas/Base64url'
+                newTransitToken:
+                  $ref: '#/components/schemas/TypedTransitToken'
+              example:
+                transitToken:
+                  transitToken: "Y3VycmVudC10cmFuc2l0LXRva2Vu"
+                newTransitToken:
+                  tokenType: "iso24851"
+                  transitToken: "bmV3LXRyYW5zaXQtVG9rZW4"
+      responses:
+        '204':
+          description: Transit token exchanged successfully
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: TransitToken not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'     
+
+components:
+  schemas:
+    Base64url:
+      type: string
+      format: base64url
+      pattern: '^[A-Za-z0-9_-]+$'
+      description: URL-safe Base64 encoding ([RFC 4648 5](https://datatracker.ietf.org/doc/html/rfc4648#section-5)).
+    TokenType:
+      type: string
+      description: >
+        The type of transit token.
+      enum: ["iso24851"]
+      default: "iso24851"
+    TypedTransitToken:
+      type: object
+      description: >
+        Transit token together with its token type
+      required:
+        - tokenType
+        - transitToken
+      properties:
+        tokenType:
+          $ref: '#/components/schemas/TokenType'
+        transitToken:
+          $ref: '#/components/schemas/Base64url'
+    TicketDeposit:
+      type: object
+      required:
+        - transitToken
+        - ticket
+      properties:
+        transitToken:
+          $ref: '#/components/schemas/TypedTransitToken'
+        ticket:
+          $ref: '#/components/schemas/Ticket'
+    Tickets:
+      type: array
+      items:
+        $ref: '#/components/schemas/Ticket'
+    Ticket:
+      type: object
+      required:
+        - ticketId
+        - depositedAt
+        - expirationTime
+        - entitlement
+        - status
+      properties:
+        productId:
+          $ref: '#/components/schemas/ProductId'
+        ticketId:
+          $ref: '#/components/schemas/TicketId'
+        depositedAt:
+          type: string
+          format: date-time
+          example: "2025-12-01T10:00:00Z"
+        effectiveTime:
+          type: string
+          format: date-time
+          example: "2025-12-08T12:00:00Z"
+        expirationTime:
+          type: string
+          format: date-time
+          example: "2025-12-31T23:59:59Z"
+        status:
+          $ref: '#/components/schemas/TicketStatus'
+        entitlement:
+          $ref: '#/components/schemas/Entitlement'
+    TicketStatus:
+      type: string
+      enum: ["ok", "terminated", "blocked"]
+    Entitlement:
+      type: object
+      description: Stores data about the entitlement that an inspection device uses for validation.
+      required:
+        - contentType
+        - content
+      properties:
+        contentType:
+          type: string
+          default: "unspecified"
+          description: >
+            The serialization form of the entitlement in the `data` field. Defines how the entitlement data is encoded.
+            While it is not necessary to specify the format, it is highly recommended to store it to allow proper decoding by inspection devices.
+          enum: ["KA", "etiCore", "UIC", "unspecified"]
+          example: "KA"
+        content:
+          type: string
+          format: byte
+          description: "The entitlement data encoded in Base64."
+          example: "d2F0Y2g/dj14dkZaam81UGdHMA=="
+    ProductId:
+      type: object
+      description: "Unique identifier for a product."
+      required:
+        - orgId
+        - productRef
+      properties:
+        orgId:
+          $ref: '#/components/schemas/OrgId'
+        productRef:
+          type: string
+          example: "12345"
+          minLength: 1
+    TicketId:
+      type: object
+      description: "Unique identifier for a ticket."
+      required:
+        - ccpOrgId
+        - ticketRef
+      properties:
+        ccpOrgId:
+          $ref: '#/components/schemas/OrgId'
+        ticketRef:
+          $ref: '#/components/schemas/TicketRef'
+    TicketRef:
+      type: string
+      minLength: 1
+      maxLength: 36
+      example: "019bfc5a-6f92-7156-a2d4-3c9dc1f682dc"
+    OrgId:
+      type: integer
+      example: 35000
+      minimum: 0
+      maximum: 2147483647
+    Problem:
+      type: object
+      description: "Problem Details as per RFC 7807"
+      required: 
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+          format: uri
+
+    
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |-
+        OAuth2 Bearer Token (JWT) with certificate binding per RFC 8705.
+
+        Required claims:
+        - `cnf.x5t#S256`: SHA-256 thumbprint of the client certificate (base64url-encoded)
+        - `vdv_role`: VDV-KA role (`so`, `ccp`, `po`)
+        - `vdv_org_id`: VDV-KA Organization ID (integer)
+        - `scope`: Authorized scopes (see below)
+
+        Available scopes:
+        - `view:token`: View ticket information from transit token (SO, CCP)
+        - `validate:token`: Validate ticket from transit token (SO, CCP)
+        - `replace:token`: Replace transit token by a new transit token (CCP)
+        - `create:ticket`: Create tickets for transit token (CCP, PO)
+        - `update:ticket`: Update tickets for transit token (CCP)
+        - `update:tickets`: Update tickets for transit token (PO)
+        - `delete:ticket`: Delete tickets from transit token (CCP)
+
+        Role permissions:
+        - SO (Dienstleister): `view:token`, `validate:token` - Can read all tickets for inspection
+        - CCP (Kundenvertragspartner): `view:token`, `validate:token`, `create:ticket`, `update:ticket`, `delete:ticket`, `replace:token` - Can manage own tickets
+        - PO (Produktverantwortlicher): `create:ticket`, `update:tickets`, `delete:tickets` - Can block/revoke tickets
+
+    mtls:
+      type: http
+      scheme: mutualTLS
+      description: |-
+        Mutual TLS with X.509 client certificate following VDV-KA PKI structure.
+
+        Certificate Subject DN format:
+        - CN: `{role}{vdv_org_id_decimal}.{domain}` (e.g., `dl44.rheinbahn.de`, `kvp35000.example.de`)
+        - O: vdv_org_id in hexadecimal (e.g., `002C` for org_id 44)
+        - C: Country code (ISO 3166-1 alpha-2, e.g., `DE`)
+
+        Role prefixes (variable length, 2-3 characters):
+        - `dl`: Dienstleister (Service Provider / Transport Operator)
+        - `kvp`: Kundenvertragspartner (Customer Contract Partner / CCP)
+        - `pv`: Produktverantwortlicher (Product Owner)
+
+        The OrgId extracted from the certificate must match the `ccpOrgId` in write operations.
+      
