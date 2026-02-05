@@ -13,7 +13,7 @@ info:
 
       Based on the provided certificates, it is determined which data (e.g., for which CCP) can be accessed and written.
 
-  version: 0.4.0
+  version: 1.0.0
   contact:
     name: HUSST e.V.
     email: info@husst.de
@@ -89,8 +89,8 @@ paths:
       tags:
         - Tickets
       security:
-        - bearerAuth: [view:token, validate:token]
-          mtls: []
+        - bearerAuth: [view:token]
+        - bearerAuth: [validate:token]
       parameters:
         - in: query
           name: transitToken
@@ -159,7 +159,7 @@ paths:
           mtls: []
       responses:
         '200':
-          description: List of tickets associated with the given transit token
+          description: Ticket associated with the given ticket reference
           content:
             application/json:
               schema:
@@ -303,8 +303,7 @@ paths:
                 newTransitToken:
                   $ref: '#/components/schemas/TypedTransitToken'
               example:
-                transitToken:
-                  transitToken: "Y3VycmVudC10cmFuc2l0LXRva2Vu"
+                transitToken: "Y3VycmVudC10cmFuc2l0LXRva2Vu"
                 newTransitToken:
                   tokenType: "iso24851"
                   transitToken: "bmV3LXRyYW5zaXQtVG9rZW4"
@@ -424,7 +423,7 @@ components:
           type: string
           default: "unspecified"
           description: >
-            The serialization form of the entitlement in the `data` field. Defines how the entitlement data is encoded.
+            The serialization form of the entitlement in the `content` field. Defines how the entitlement data is encoded.
             While it is not necessary to specify the format, it is highly recommended to store it to allow proper decoding by inspection devices.
           enum: ["KA", "etiCore", "UIC", "unspecified"]
           example: "KA"
@@ -499,7 +498,7 @@ components:
 
         Required claims:
         - `cnf.x5t#S256`: SHA-256 thumbprint of the client certificate (base64url-encoded)
-        - `vdv_role`: VDV-KA role (`so`, `ccp`, `po`)
+        - `vdv_role`: VDV-KA role (`so`, `ccp`)
         - `vdv_org_id`: VDV-KA Organization ID (integer)
         - `scope`: Authorized scopes (see below)
 
@@ -507,15 +506,13 @@ components:
         - `view:token`: View ticket information from transit token (SO, CCP)
         - `validate:token`: Validate ticket from transit token (SO, CCP)
         - `replace:token`: Replace transit token by a new transit token (CCP)
-        - `create:ticket`: Create tickets for transit token (CCP, PO)
+        - `create:ticket`: Create tickets for transit token (CCP)
         - `update:ticket`: Update tickets for transit token (CCP)
-        - `update:tickets`: Update tickets for transit token (PO)
         - `delete:ticket`: Delete tickets from transit token (CCP)
 
         Role permissions:
         - SO (Dienstleister): `view:token`, `validate:token` - Can read all tickets for inspection
         - CCP (Kundenvertragspartner): `view:token`, `validate:token`, `create:ticket`, `update:ticket`, `delete:ticket`, `replace:token` - Can manage own tickets
-        - PO (Produktverantwortlicher): `create:ticket`, `update:tickets`, `delete:tickets` - Can block/revoke tickets
 
     mtls:
       type: http

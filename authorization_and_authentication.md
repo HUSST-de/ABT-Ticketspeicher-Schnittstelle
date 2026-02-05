@@ -1,13 +1,14 @@
 # Authorization and Authentication
 
-This document describes the security architecture for the HUSST Tickethub API, based on OAuth2 with mutual TLS (mTLS) as defined in [RFC 8705](https://datatracker.ietf.org/doc/html/rfc8705).
+This document describes the security architecture for the HUSST Tickethub API.
 
 ## Security Model Overview
 
-The API implements a OAuth2 with mutual TLS security approach for all operations:
+The Tickethub API uses OAuth 2.0 with certificate-bound JWT Bearer Tokens in combination with mutual TLS (mTLS).
+Access tokens are bound to the client’s X.509 certificate by the authorization server ([RFC 8705](https://datatracker.ietf.org/doc/html/rfc8705)), ensuring they can only be used by the issuing client.
 
-- **Create, Update and Delete operations** (POST, PATCH, DELETE): OAuth2 JWT Bearer Tokens + mutual TLS (mTLS)
-- **View and Validation operations** (GET): OAuth2 JWT Bearer Tokens + mutual TLS (mTLS)
+ - **Create, Update, and Delete operations (POST, PATCH, DELETE)**: JWT Bearer Token and mTLS
+ - **View and Validation operations (GET)**: JWT Bearer Token (certificate-bound)
 
 ## VDV-KA Certificate Subject DN Format
 
@@ -94,12 +95,12 @@ When a client authenticates via mTLS at the token endpoint, the authorization se
 ```json
 {
   "iss": "https://auth.tickethub.example.com",
-  "sub": "kvp35000",
+  "sub": "dl35000",
   "aud": "https://api.tickethub.example.com",
   "exp": 1735689600,
   "scope": "view:token validate:token",
   "vdv_role": "dl",
-  "vdv_org_id": 44,
+  "vdv_org_id": 35000,
   "cnf": {
     "x5t#S256": "fUHyO2r2Z3DZ53EsNrWBb0xWXoaNy59IiKCAqksmQEo"
   }
@@ -232,7 +233,7 @@ Content-Type: application/x-www-form-urlencoded
 grant_type=client_credentials&scope=view:token%20validate:token
 ```
 
-The client authenticates via its X.509 certificate presented during the TLS handshake. No `client_id` or `client_secret` is required when using `tls_client_auth`.
+The client authenticates via its X.509 certificate presented during the TLS handshake.
 
 Example response:
 

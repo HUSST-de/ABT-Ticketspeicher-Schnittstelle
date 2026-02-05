@@ -72,8 +72,8 @@ The API endpoints provide access to the ticket storage, which is essentially a h
 |--------|----------|-----------|----------------|
 | `POST` | `/tickets` | Create new ticket | `create:ticket` |
 | `GET` | `/tickets` | Retrieve tickets for a transit token | `view:token` or `validate:token` |
-| `PATCH` | `/tickets/{entitlementRef}` | Update a single ticket | `update:ticket` |
-| `DELETE` | `/tickets/{entitlementRef}` | Delete a single ticket | `delete:ticket` |
+| `PATCH` | `/tickets/{ticketRef}` | Update a single ticket | `update:ticket` |
+| `DELETE` | `/tickets/{ticketRef}` | Delete a single ticket | `delete:ticket` |
 
 ### Tokens
 
@@ -124,7 +124,7 @@ sequenceDiagram
   "ticketData": {
     "entitlementId": {
       "ccpOrgId": 35000,
-      "entitlementRef": "987654321"
+      "ticketRef": "987654321"
     },
     "depositedAt": "2025-12-08T11:50:00Z",
     "effectiveTime": "2025-12-08T12:00:00Z",

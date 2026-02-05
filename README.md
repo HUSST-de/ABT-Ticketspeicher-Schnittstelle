@@ -20,7 +20,7 @@ Für **Fragen**, **Anmerkungen** und **Feedback** kann gerne die Issue-Funktion 
 ## Einführung / Zusammenfassung
 
 Ein **ABT-Ticketspeicher** (Account-Based Ticketing bzw. ID-Based Ticketing (IDBT)) verlagert die Fahrtberechtigung aus dem Medium (Karte/Barcode) in ein zentrales Backend („Cloud“). In heterogenen Systemlandschaften entstehen dabei Interoperabilitätsprobleme (z. B. **unterschiedliche Tokenisierung** und **fehlende gemeinsame Schnittstellen**).  
-Der hier spezifizierte **Ticketspeicher** adressiert diese Lücke: Er ist eine **hochverfügbare, mandantenfähige** Speicherung von Tickets, die **übergreifend** von Systemen unterschiedlicher Hersteller genutzt werden kann – mit einem ersten Fokus auf eine **übergreifende Kontrolle von IDBT-Systemen**.
+Der hier spezifizierte **Ticketspeicher** adressiert diese Lücke: Er ist eine **hochverfügbare, mandantenfähige** Speicherung von Tickets, die **übergreifend** von Systemen unterschiedlicher Hersteller genutzt werden kann – mit einem ersten Fokus auf eine **übergreifende Kontrolle von ABT/IDBT-Systemen**.
 
 **Wichtig:** Der Ticketspeicher **berechnet keine Tariflogik** und hält **keine Zahlungs- oder Kundendaten**. Er speichert und liefert Ticketdaten (Container) plus minimal notwendige strukturierte Metadaten.
 
@@ -87,18 +87,16 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 - **Tickets**
   - `POST /tickets` – Ticket anlegen
   - `GET /tickets` – Tickets zu einem Transit-Token abrufen (u. a. Kontrolle)
-  - `PATCH /tickets` – Bulk-Statusänderungen (produktbezogen)
-  - `DELETE /tickets` – Bulk-Delete (produktbezogen)
-  - `PATCH /tickets/{entitlementRef}` – einzelnes Ticket aktualisieren
-  - `DELETE /tickets/{entitlementRef}` – einzelnes Ticket löschen
+  - `PATCH /tickets/{ticketRef}` – einzelnes Ticket aktualisieren
+  - `DELETE /tickets/{ticketRef}` – einzelnes Ticket löschen
 - **Tokens**
-  - `POST /tokens/{transitToken}` – Transit-Token ersetzen (Neuzuordnung auf neues Medium)
+  - `POST /tokens` – Transit-Token ersetzen (Neuzuordnung auf neues Medium)
 
 ### Ticket-Modell (Kurzbeschreibung)
 
 Ein Ticket besteht aus:
 
-- **strukturierte Daten** (u. a. `status`, `effectiveTime`, `expirationTime`, `entitlementId`)
+- **strukturierte Daten** (u. a. `status`, `effectiveTime`, `expirationTime`, `ticketId`)
 - **Container („Entitlement“)**: uninterpretiert im Ticketspeicher; erlaubt beliebige, abgestimmte Formate (z. B. VDV-KA/VDV-ETS, UIC, etiCore, …)
 
 ---
@@ -118,7 +116,6 @@ _Referenz:_ Die Rollen-/Verantwortungsabgrenzung orientiert sich an **ISO 24014-
 
 - **DL / SO (Dienstleister / Service Operator)**: Tickets lesen (Kontrolle)
 - **KVP / CCP (Kundenvertragspartner / Customer Contract Partner)**: CRUD auf eigene Tickets
-- **PV / PO (Produktverantwortlicher / Product Owner)**: Status eigener Tickets ändern (z. B. sperren/entsperren), Token aktualisieren
 
 ### Scopes (Beispiele)
 

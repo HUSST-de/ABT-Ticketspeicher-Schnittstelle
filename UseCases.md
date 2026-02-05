@@ -1,8 +1,8 @@
 # Einleitung
-Die HUSST-Gruppe wurde mit der Erstellung einer Spezifikation für eine offene Schnittstelle zu einem IDBT/ABT-Ticketspeicher betraut. Im folgenden sind fachliche Aspekte und Anwendungsfälle (use cases) aufgeführt, die wir für das Verständnis und die die Nutzung der Schnittstelle als relevant betrachten.  
+Die HUSST-Gruppe wurde mit der Erstellung einer Spezifikation für eine offene Schnittstelle zu einem ABT/IDBT-Ticketspeicher betraut. Im Folgenden sind fachliche Aspekte und Anwendungsfälle (use cases) aufgeführt, die wir für das Verständnis und die Nutzung der Schnittstelle als relevant betrachten.  
 
 # Festlegung und Abgrenzung
-- Zur Nutzung des IDBT/ABT-Ticketspeichers ist eine Online-Verbindung nötig. Temporäre Netzausfälle sind daher z. B. durch Caching-Mechanismen bei den Backend-Systemen der Verkehrsunternehmen abzufangen.
+- Zur Nutzung des ABT/IDBT-Ticketspeichers ist eine Online-Verbindung nötig. Temporäre Netzausfälle sind daher z. B. durch Caching-Mechanismen bei den Backend-Systemen der Verkehrsunternehmen abzufangen.
 
 - Die von der VDV-ETS vorgegebenen Strukturen zur Darstellung und Prüfung von Tickets können identisch übernommen werden. Das dabei benötigte Kontrollmodul muss weiterhin im Kontrollgerät mitgeführt werden.
   
@@ -30,7 +30,7 @@ Möchte ein Fahrgast an einem CiCo-Verfahren teilnehmen, so kann dieses durch di
 ## c) Nutzung Check-in oder Check-out (Ausblick)
 Die Dokumentation der Entwertung bei Einstieg / Fahrtbeginn durch einen Check-in-Datensatz bzw. analog beim Ausstieg / Fahrtende durch einen Check-out-Datensatz erfolgt ebenfalls analog dem Verkauf eines Tickets (siehe a). 
 
-# Sequenzdiagram: Ticket zum Ticketspeicher hinzufügen
+# Sequenzdiagramm: Ticket zum Ticketspeicher hinzufügen
 
 ```mermaid
 sequenceDiagram
@@ -83,14 +83,13 @@ sequenceDiagram
 # Anwendungsfall 3: Tickets aktualisieren / sperren
 
 ## a) Stammdatenänderung
-Tickets die bereits zum Ticketspeicher hinzugefügt wurden können aktualisiert werden. Dazu kann das Ticket über die Funktion **PATCH /tickets** im Ticketspeicher aktualisiert werden um beispielsweise die Gültigkeit eines Tickets zu verändern.
+Tickets die bereits zum Ticketspeicher hinzugefügt wurden können aktualisiert werden. Dazu kann das Ticket über die Funktion **PATCH /tickets/{ticketRef}** im Ticketspeicher aktualisiert werden um beispielsweise die Gültigkeit eines Tickets zu verändern.
 
 ## b) Sperre: Nutzer soll Ticket nicht mehr nutzen
 Hat ein Nutzer seine Rechnung nicht bezahlt oder soll er aus anderem Grund ein Ticket nicht mehr nutzen, so kann es gesperrt werden. Dazu kann die entsprechende Funktion genutzt werden, der das Verkehrsunternehmen seine OrgID sowie die eindeutige Referenz des Tickets und den Status "GESPERRT" übergibt. Entfällt der Sperrgrund, so kann der Status auf "OK" zurückgestellt werden.
 
 ## c) Sperre: Nutzermedium verloren oder gestohlen
-Geht das Nutzermedium verloren oder wird gestohlen, so soll Missbrauch vorgebeugt werden, wobei alle zu einem Transit-Token gehörenden Tickets eines Verkehrsunternehmens über die entsprechende Funktion den Status "GESPERRT" erhalten können. Wird es wiedergefunden, so kann der Status auf "OK" zurückgestellt werden - im anderen Fall wäre das Ticket zu löschen (s.u. Anwendungsfall 7). Es ist zu klären, in wie weit ein Verkehrsunternehmen auch Tickets anderer Verkehrsunternehmen auf diesem Wege sperren darf.
-
+Geht das Nutzermedium verloren oder wird gestohlen, so soll Missbrauch vorgebeugt werden, wobei alle zu einem Transit-Token gehörenden Tickets eines Verkehrsunternehmens über die entsprechende Funktion den Status "GESPERRT" erhalten können. Wird es wiedergefunden, so kann der Status auf "OK" zurückgestellt werden - im anderen Fall wäre das Ticket zu löschen (s.u. Anwendungsfall 7).
 
 ## Sequenzdiagramm: Update von Tickets mittels Entitlement
 
@@ -101,10 +100,10 @@ sequenceDiagram
     participant Tickethub as Ticket hub
     participant Database@{"type":"database"}
 
-    Client->>+Tickethub: PATCH /tickets/{entitlementRef}
+    Client->>+Tickethub: PATCH /tickets/{ticketRef}
     note over Client,Tickethub: Authentication flow successful<br>and oauth2 scope matches
 
-    Tickethub->>+Database: Find ticket by ccpOrgId from certificate and given `entitlementRef`
+    Tickethub->>+Database: Find ticket by ccpOrgId from certificate and given `ticketRef`
     alt Ticket Found
         Tickethub->>Database: Update status (ok/terminated/blocked)
         Database-->>-Tickethub: Updated
@@ -116,7 +115,7 @@ sequenceDiagram
 
 
 # Anwendungsfall 4: Ersatzkarte (Ticket auf neues Medium)
-Soll eine Ersatzkarte / Ersatzmedium für ein verloren gegangenes oder defektes Medium erstellt werden, so kann auch im Ticketspeicher ein entsprechender Austausch vorgenommen werden. Dabei wird die Funktion **POST /tokens** aufgerufen, die sowohl das alte als auch das neue Transit-Token erhält. Im Ticketspeicher werden dann alle Tickets mit Status OK dem neuen Transit-Token zugeordnet. Es ist zu klären, in wie weit ein Verkehrsunternehmen auch Tickets anderer Verkehrsunternehmen auf diesem Wege neu zuordnen können soll.
+Soll eine Ersatzkarte / Ersatzmedium für ein verloren gegangenes oder defektes Medium erstellt werden, so kann auch im Ticketspeicher ein entsprechender Austausch vorgenommen werden. Dabei wird die Funktion **POST /tokens** aufgerufen, die sowohl das alte als auch das neue Transit-Token erhält. Im Ticketspeicher werden dann alle Tickets mit Status OK dem neuen Transit-Token zugeordnet.
 
 ```mermaid
 sequenceDiagram
@@ -137,7 +136,7 @@ sequenceDiagram
         Database-->>-Tickethub: Matching tickets
         Tickethub->>+Database: Update transitToken to newTransitToken
         Database-->>-Tickethub: Tickets updated
-        Tickethub-->>-Client: 200 OK with EntitlementId array
+        Tickethub-->>-Client: 204 No Content
     end
 ```
 
@@ -145,7 +144,7 @@ sequenceDiagram
 Soll eine Nutzung im Rahmen eines Check-in- / Check-out-Verfahrens ein Ein- oder Ausstieg dokumentiert werden, so kann dieser im Ticketspeicher analog eines Verkaufs abgelegt werden ([Anwendungsfall 1](#anwendungsfall-1-eintrag-im-ticketspeicher)). Bei der Kontrolle erfolgt dabei wie oben beschrieben ([Anwendungsfall 2](#anwendungsfall-2-kontrolle)), wobei die Gültigkeitsprüfung auf den letzten gültigen Check-in auf den kein Check-out folgt stattfinden kann und dies dann analog der Prüfung eines Einzelfahrscheins. 
 
 # Anwendungsfall 6: Ticket löschen
-Wird ein Ticket nicht mehr benötigt, weil es z. B. nicht mehr gültig ist und auch bei der Anzeige bei der personalbedienten Kontrolle nicht mehr erscheinen soll, so kann es über die Funktion **DELETE /tickets** aus dem Ticketspeicher gelöscht werden.
+Wird ein Ticket nicht mehr benötigt, weil es z. B. nicht mehr gültig ist und auch bei der Anzeige bei der personalbedienten Kontrolle nicht mehr erscheinen soll, so kann es über die Funktion **DELETE /tickets/{ticketRef}** aus dem Ticketspeicher gelöscht werden.
 
 
 ```mermaid
@@ -155,10 +154,10 @@ sequenceDiagram
     participant Tickethub as Ticket hub
     participant Database@{"type":"database"}
 
-    Client->>+Tickethub: DELETE /tickets/{entitlementRef}
+    Client->>+Tickethub: DELETE /tickets/{ticketRef}
     note over Client,Tickethub: Authentication flow successful<br>and oauth2 scope matches
 
-    Tickethub->>+Database: Find ticket by ccpOrgId from<br>certificate and given `entitlementRef`
+    Tickethub->>+Database: Find ticket by ccpOrgId from<br>certificate and given `ticketRef`
     alt Ticket Found
         Tickethub->>Database: Delete ticket
         Database-->>-Tickethub: Deleted database entry

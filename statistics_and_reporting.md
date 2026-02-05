@@ -1,6 +1,6 @@
 # Konzeptspezifikation: Statistiken & Reporting im zentralen Ticketspeicher
 
-*Dieses Dokument nutzt die englischen Abkürzungen für die Rollen verschiedenen Rollen*
+*Dieses Dokument nutzt die englischen Abkürzungen für die verschiedenen Rollen*
 
 | Deutsch | Englisch |
 |-----------|--------|
@@ -19,17 +19,17 @@ Um die richtigen Statistiken zu definieren, müssen die Perspektiven der beteili
 
 * **Der Ticketspeicher-Betreiber (z. B. die eTS):** Benötigt technische Metriken zum Betriebsstatus des Ticketspeichers sowie zur Auslastung, Verteilung und Nutzung des Systems aggregiert zu den teilnehmenden Mandanten.
 * **Der Berechtigungsausgeber (CCP - Customer Contract Partner):** Das VU, das das Ticket verkauft (z. B. Rheinbahn). Fragestellung: "Wie viele meiner Kunden mit übergreifenden Produkten werden auch übergreifend kontrolliert? Wo werden meine Kunden kontrolliert?"
-* **Der Kontrolleur (SO - Service Operator):** Das VU, das die Kontrolle durchführt (z. B. KVB). Fragestellung: "Wie viele Fremdkunden habe ich heute geprüft? Wo erwerben Fremdkunden ihre Fahrtberechtigungen? Wie hoch ist die Quote ungültiger Token?"
+* **Das kontrollierende Verkehrsunternehmen (SO - Service Operator):** Das VU, das die Kontrolle durchführt (z. B. KVB). Fragestellung: "Wie viele Fremdkunden habe ich heute geprüft? Wo erwerben Fremdkunden ihre Fahrtberechtigungen? Wie hoch ist die Quote ungültiger Token?"
 
 ## 3. Datenbasis: Protokollierung der Aktionen
 Die Grundlage aller Auswertungen ist ein detailliertes Event-Logging der Interaktionen mit den fachlichen Endpunkten. Der Ticketspeicher muss u. a. folgende Kernaktionen der CCPs und SOs persistieren:
 
-### 3.1 Event: TokenStored (Publishen von Berechtigungen)
-Wird ausgelöst, wenn ein CCP eine Berechtigung in den Speicher schreibt.
-* Zeitstempel der lokalen Ausgabe der Berechtigung.
+### 3.1 Event: TicketStored (Publishen von Berechtigungen)
+Wird ausgelöst, wenn ein CCP ein Ticket in den Speicher schreibt.
+* Zeitstempel der lokalen Ausgabe des Tickets.
 * Zeitstempel des Empfangs im Hub.
 * CCP Org-ID (Wer liefert?).
-* Gültigkeitsbeginn und -ende der Berechtigung (lt. Fahrtberechtigung).
+* Gültigkeitsbeginn und -ende des Tickets (lt. Fahrtberechtigung).
 
 ### 3.2 Event: TokenChecked (Abrufen von Berechtigungen)
 Wird ausgelöst, wenn ein SO (Prüfgerät) eine Anfrage an den Hub stellt.
@@ -53,8 +53,8 @@ Wird ausgelöst, wenn ein CCP ein Transittoken durch ein anderes ausgetauscht ha
 * **Peak Load:** Maximalwert der Transaktionen pro Minute innerhalb eines Berichtszeitraums.
 
 ### 4.2 Validierungsergebnisse
-* **Success Rate (Gültig):** Verhältnis von Anfragen mit Ergebnis "Gültige Berechtigung gefunden" zur Gesamtzahl.
-* **Expiration Rate (Abgelaufen):** Token war bekannt, aber die Berechtigung lag zeitlich außerhalb des Gültigkeitszeitraums.
+* **Success Rate (Gültig):** Verhältnis von Anfragen mit Ergebnis "Gültiges Tickets gefunden" zur Gesamtzahl.
+* **Expiration Rate (Abgelaufen):** Das Token war bekannt, jedoch lag der Zeitpunkt der Kontrolle außerhalb des Gültigkeitszeitraums des Tickets.
 * **Unknown Token Rate (Unbekannt):** Verhältnis von Anfragen, bei denen der Token im Hub nicht existiert.
 * **Technical Error-Rate:** Verhältnis technisch fehlgeschlagener Abfragen (Timeouts, 5xx-Fehler, 4xx-Fehler).
 * **Sleeping-Assets:** Verhältnis von nie kontrollierten Token an der Token-Gesamtanzahl.
@@ -62,8 +62,8 @@ Wird ausgelöst, wenn ein CCP ein Transittoken durch ein anderes ausgetauscht ha
 ### 4.3 Anomalie-Erkennung und Prozessqualität
 Das System korreliert die Zeitstempel aus `TokenStored` und `TokenChecked`, um Latenzen von Nutzerfehlverhalten zu unterscheiden:
 
-* **Nutzerseitiges Fehlverhalten:** Ticketspeicher meldet "Keine Berechtigung". Auch nach einer Karenzzeit (z. B. 24h) geht keine Berechtigung ein. Diese Fälle werden als "Fahren ohne gültigen Fahrausweis" (EBE) kategorisiert.
-* **Systembedingte Latenz:** Kontrolle um 10:00 Uhr negativ, aber um 10:05 Uhr liefert der CCP eine Berechtigung ein, deren Gültigkeit bereits ab 09:00 Uhr bestand.
+* **Nutzerseitiges Fehlverhalten:** Ticketspeicher meldet "Kein Ticket". Auch nach einer Karenzzeit (z. B. 24h) geht kein Ticket ein. Diese Fälle werden als "Fahren ohne gültigen Fahrausweis" (EBE) kategorisiert.
+* **Systembedingte Latenz:** Kontrolle um 10:00 Uhr negativ, aber um 10:05 Uhr liefert der CCP ein Ticket ein, deren Gültigkeit bereits ab 09:00 Uhr bestand.
 * **Metrik "System Latency":** Zeitdifferenz zwischen Ausgabezeitpunkt und Empfang im Ticketspeicher. Dient dem Qualitätsmanagement zu langsamer Hintergrundsysteme.
 
 ### 4.4 Interoperabilitäts-Matrix
