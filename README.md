@@ -1,11 +1,8 @@
 ## ABT/IDBT Ticketspeicher – Schnittstellen-Spezifikation
 
 **Status:** Official Release
-
 **Version:** 1.0.0
-
 **Erstellt von:** **Arbeitsgruppe ABT / IDBT (by HUSST)** – weitere Informationen unter [husst.de](https://husst.de).
-
 **Veröffentlichungsdatum:** **30.01.2026**
 
 Dieses Repository enthält einen **Entwurf einer Spezifikation** für einen **ABT/IDBT-Ticketspeicher** inkl. **Use Cases**, **HTTP-API (OpenAPI)** sowie einem **Konzept für Authentifizierung & Autorisierung**.
