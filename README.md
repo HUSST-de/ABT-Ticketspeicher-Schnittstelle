@@ -1,10 +1,12 @@
-## HUSST ABT/IDBT Ticketspeicher – Schnittstellen-Spezifikation (Working Draft)
+## ABT/IDBT Ticketspeicher – Schnittstellen-Spezifikation
 
-**Status:** Working Draft (nicht final, Änderungen jederzeit möglich)  
-**Version:** **0.4**  
-**Erstellt von:** **HUSST Gruppe** – weitere Informationen unter [husst.de](https://husst.de).
+**Status:** First Offical Release
+**Version:** **1.0,0**  
+**Erstellt von:** **Arbeitsgruppe ABT / IDBT (by HUSST)** – weitere Informationen unter [husst.de](https://husst.de).
+**Veröffentlichungsdatum:** **30.01.2026**
 
 Dieses Repository enthält einen **Entwurf einer Spezifikation** für einen **ABT/IDBT-Ticketspeicher** inkl. **Use Cases**, **HTTP-API (OpenAPI)** sowie einem **Konzept für Authentifizierung & Autorisierung**.
+Für **Fragen**, **Anmerkungen** und **Feedback** kann gerne Issue-Funktion in diesem Github-Repository genutzt werden. Alternativ stehen wir für Nachfragen per E-Mail unter **ticketspeicher@husst.de** zur Verfügung.
 
 - **Use Cases:** [Use Cases](UseCases.md)
 - **AuthN/AuthZ-Konzept:** [Authentifizierung und Autorisierung](authorization_and_authentication.md)
@@ -38,7 +40,7 @@ Der Ticketspeicher ist im Kern eine **hochverfügbare Datenbank** mit einer schl
 
 Tickets werden im Ticketspeicher **immer** zusammen mit einer Referenz auf einen **Transit-Token** gespeichert. Ein Transit-Token besitzt einen **Token-Typ** (`tokenType`), der das jeweilige Token-Schema beschreibt.
 
-- **Aktueller Vorschlag (v0.4):** ausschließlich `iso24851`
+- **Aktueller Vorschlag (v1.0.0):** ausschließlich `iso24851`
 - **Wichtig:** **ISO 24851** ist zum Zeitpunkt dieser Version **nur ein Entwurf (Draft)**. Aus urheber- und nutzungsrechtlichen Gründen werden in dieser Spezifikation **keine weiteren inhaltlichen Details** zum Token-Schema `iso24851` angeführt.
 - **Ausblick:** In späteren Versionen können **weitere Transit-Token-Typen** ergänzt werden.
 
@@ -78,7 +80,7 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 
 - Tickets werden über einen **Transit-Token** adressiert.
 - Transit-Tokens sind **typisiert** (`tokenType` + `transitToken`).
-- In **v0.4** ist als `tokenType` ausschließlich **`iso24851`** vorgesehen.
+- In **v1.0.0** ist als `tokenType` ausschließlich **`iso24851`** vorgesehen.
 
 ### Endpunkte (Kurzliste)
 
@@ -193,7 +195,6 @@ Der Ticketspeicher ist ein **übergreifender, zentraler** Speicher, der **lokale
 - Rollen/Scopes so schneiden, dass:
   - KVP/CCP nur „eigene“ Tickets schreibt/ändert
   - DL/SO für Kontrolle nur lesend/validierend zugreift
-  - PV/PO Status/Token-Operationen durchführen kann
 
 ---
 
@@ -204,4 +205,4 @@ This repository is licensed under the Creative Commons Attribution 4.0 Internati
 
 Empfohlene Attribution für Wiederverwendung:
 
-"© 2026 HUSST (Arbeitsgruppe von ITS Germany – Bundesverband der Wirtschaft und Wissenschaft für Verkehrstechnologien und intelligente Mobilität e.V.) — licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"
+"© 2026 Arbeitsgruppe ABT / IDBT (by HUSST) (Arbeitsgruppe des Fachausschuss HUSST von ITS Germany – Bundesverband der Wirtschaft und Wissenschaft für Verkehrstechnologien und intelligente Mobilität e.V.) — licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)"

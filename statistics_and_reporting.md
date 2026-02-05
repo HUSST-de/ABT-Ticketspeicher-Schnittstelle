@@ -49,7 +49,7 @@ Wird ausgelöst, wenn ein CCP ein Transittoken durch ein anderes ausgetauscht ha
 * **Total Stored Tokens:** Gesamtzahl der physisch im Speicher liegenden Datensätze.
 * **Active Valid Tokens:** Anzahl der Token, deren Gültigkeitszeitraum den aktuellen Zeitpunkt einschließt.
 * **Token types used:** Anzahl der Token aufgeschlüsselt nach Typen (inkl. Subtypen).
-* **Transaction Volume:** Anzahl der Lese-Zugriffe (`/token/check`) und Schreib-Zugriffe (`/token/store`) pro Zeitintervall.
+* **Transaction Volume:** Anzahl der Lese-Zugriffe und Schreib-Zugriffe pro Zeitintervall.
 * **Peak Load:** Maximalwert der Transaktionen pro Minute innerhalb eines Berichtszeitraums.
 
 ### 4.2 Validierungsergebnisse

@@ -27,7 +27,7 @@ For `iso24851`, matching rules depend on the tokenization method defined by the 
 ## Ticket
 
 A ticket is a composite of structured data that is available for interpretation for the ticket hub and a ticket container which is not interpreted by the ticket hub. It allows to filter the tickets for relevance when an inspection requests tickets for inspection.
-The ticket container's format can be freely chosen by the different parties (PO, CCP, SO).
+The ticket container's format can be freely chosen by the different parties (CCP, SO).
 
 ### Structured data
 
@@ -89,7 +89,7 @@ This flow illustrates the authentication and authorization process that precedes
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Client as PO/CCP/SO
+    participant Client as CCP/SO
     participant Tickethub as Ticket hub
 
     Client->>+Tickethub: API Request [Bearer Token + mTLS]

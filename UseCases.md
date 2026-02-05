@@ -45,7 +45,7 @@ sequenceDiagram
     alt Valid Ticket Data
         Tickethub->>+Database: Store ticket with transitToken
         Database-->>-Tickethub: Ticket stored
-        Tickethub-->>Client: 204 No Content
+        Tickethub-->>Client: 201 Created
     else Invalid Data
         Tickethub-->>-Client: 400 Bad Request
     end
