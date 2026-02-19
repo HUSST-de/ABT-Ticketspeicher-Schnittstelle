@@ -46,7 +46,7 @@ If not specified explicitly:
 ### Retrieved tickets (read)
 
 When tickets are retrieved from the API, the structured data additionally contains:
-- `entitlementId` (including `ccpOrgId`)
+- `ticketId` (including `ccpOrgId`)
 - `status`
 - `effectiveTime`
 - `expirationTime`
@@ -92,11 +92,10 @@ sequenceDiagram
     participant Client as CCP/SO
     participant Tickethub as Ticket hub
 
-    Client->>+Tickethub: API Request [Bearer Token + mTLS]
+    Client->>+Tickethub: API Request [Bearer Token]
 
     Tickethub->>Tickethub: Validate JWT signature
-    Tickethub->>Tickethub: Verify mTLS certificate
-    Tickethub->>Tickethub: Match cnf.x5t#S256 with cert thumbprint
+    Tickethub->>Tickethub: If mTLS present, verify certificate binding
 
     alt Authentication failed
         Tickethub-->>Client: 401 Unauthorized
@@ -119,40 +118,33 @@ sequenceDiagram
 
 ```json
 {
-  "uuid": "123e4567-e89b-12d3-a456-426614174000",
+  "ticketId": {
+    "ccpOrgId": 35000,
+    "ticketRef": "987654321"
+  },
   "depositedAt": "2025-12-01T10:00:00Z",
-  "ticketData": {
-    "entitlementId": {
-      "ccpOrgId": 35000,
-      "ticketRef": "987654321"
-    },
-    "depositedAt": "2025-12-08T11:50:00Z",
-    "effectiveTime": "2025-12-08T12:00:00Z",
-    "expirationTime": "2025-12-31T23:59:59Z",
-    "status": "ok",
-    "entitlement": {
-      "contentType": "tlvEfs",
-      "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
-    }
+  "effectiveTime": "2025-12-08T12:00:00Z",
+  "expirationTime": "2025-12-31T23:59:59Z",
+  "status": "ok",
+  "entitlement": {
+    "contentType": "etiCore",
+    "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
   }
 }
-
 ```
 
 ### Entitlement Content Types
 
 | Type | Description |
 |------|-------------|
-| `tlvEfs` | TLV EFS format |
-| `referenzEfs` | Reference EFS format |
-| `referenzPobPeb` | Reference POB/PEB format |
-| `referenzEfsStb` | Reference EFS STB format |
-| `eticoreEt` | eTicore ET format |
+| `KA` | VDV-KA format |
+| `etiCore` | etiCore format |
+| `UIC` | UIC format |
 | `unspecified` | Unspecified format (default) |
 
 ### OrgId
 
-Organization IDs range from `0` to `35067`.
+Organization IDs range from `0` to `2147483647`.
 
 ## Response Codes
 
@@ -169,24 +161,27 @@ Organization IDs range from `0` to `35067`.
 
 ## Error Handling
 
-All error responses follow this structure:
+All error responses follow RFC 7807 (Problem Details):
 
 ```json
 {
-  "code": 123,
-  "message": "Descriptive error message"
+  "type": "https://api.example.com/problems/invalid-request",
+  "title": "Invalid request",
+  "status": 400,
+  "detail": "Descriptive error message",
+  "instance": "/tickets"
 }
 ```
 
 ### Common Error Scenarios
 
-| Scenario | Code | Description/Example |
-|----------|------|-----------------|
-| Missing auth token | 1 | Authentication required. |
-| Invalid OrgId | 2 | Invalid OrgId. |
-| Certificate mismatch | 3 | Insufficient permissions to store this ticket as ccpOrgId doesn't match OrgId from certificate. |
-| Missing Scope | 5 | Insufficient permissions to for the requested operation and the provided scope. |
-| Ticket not found | 4 | Ticket number not found. |
+| Scenario | Status | Description/Example |
+|----------|--------|---------------------|
+| Missing auth token | 401 | Authentication required. |
+| Invalid OrgId | 400 | Invalid OrgId. |
+| Certificate mismatch | 403 | Insufficient permissions: OrgId does not match certificate. |
+| Missing scope | 403 | Insufficient permissions for the requested operation. |
+| Ticket not found | 404 | Ticket reference not found. |
 
 
 ## Encoding

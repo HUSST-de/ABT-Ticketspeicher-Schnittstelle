@@ -8,7 +8,7 @@ The Tickethub API uses OAuth 2.0 with certificate-bound JWT Bearer Tokens in com
 Access tokens are bound to the client’s X.509 certificate by the authorization server ([RFC 8705](https://datatracker.ietf.org/doc/html/rfc8705)), ensuring they can only be used by the issuing client.
 
  - **Create, Update, and Delete operations (POST, PATCH, DELETE)**: JWT Bearer Token and mTLS
- - **View and Validation operations (GET)**: JWT Bearer Token (certificate-bound)
+ - **View and Validation operations (GET)**: JWT Bearer Token (certificate-bound). Client mTLS is not required for read operations.
 
 ## VDV-KA Certificate Subject DN Format
 
@@ -350,7 +350,7 @@ sequenceDiagram
   Client->>AuthServer: 1. mTLS + Client<br/>Credentials
   AuthServer->>Client: 2. Certificate-<br/>Bound Token
   Client->>API: 3. Bearer Token<br/>(TLS, no client cert)
-  Note over API: 4. Validate:<br/>- Token signature<br/>- Role + Scope
+  Note over API: 4. Validate:<br/>- Token signature<br/>- Certificate binding claim<br/>- Role + Scope
   API->>Client: 5. Response
 ```
 
@@ -394,4 +394,3 @@ Example error response:
 - [OpenID Connect Core 1.0](https://openid.net/specs/openid-connect-core-1_0.html)
 - [OpenID Connect Discovery 1.0](https://openid.net/specs/openid-connect-discovery-1_0.html)
 - [OpenAPI 3.1 Security Schemes](https://spec.openapis.org/oas/v3.1.0#security-scheme-object)
-
