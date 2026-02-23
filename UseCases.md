@@ -55,10 +55,10 @@ sequenceDiagram
 Für die Kontrolle wird der Ticketspeicher ausgelesen über die Funktion **GET /tickets**. Bei der Kontrolle sind verschiedene Fälle zu unterscheiden
 
 ## a) automatische Kontrolle
-Die automatische Kontrolle findet an einer Stele oder einem anderen statischen oder mobilen Kontrollgerät statt. Sie öffnet z. B. automatisch ein Tor (Gate) oder zeigt eine grüne oder rote Lampe an. Dazu wird die Identifikation vom Nutzermedium gelesen und damit eine Anfrage an den Ticketspeicher gestellt, der daraufhin alle als aktiv gekennzeichneten Tickets (Status OK oder GESPERRT) des Fahrgastes zurückliefert. Die Prüfung, ob das Ticket tatsächlich räumlich und zeitlich gültig ist gem. der geltenden Tarifbestimmungen bzw. was im Fall eine gesperrten Tickets passiert obliegt der Software des Kontrollgerätes. 
+Die automatische Kontrolle findet an einer Stele oder einem anderen statischen oder mobilen Kontrollgerät statt. Sie öffnet z. B. automatisch ein Tor (Gate) oder zeigt eine grüne oder rote Lampe an. Dazu wird die Identifikation vom Nutzermedium gelesen und damit eine Anfrage an den Ticketspeicher gestellt, der daraufhin alle Tickets zurückliefert, die zeitlich noch gültig sind oder kürzlich abgelaufen sind. Ein Ticket wird zurückgegeben, wenn die aktuelle Zeit im Gültigkeitszeitraum des Tickets liegt (plus eine vom Betreiber definierte Toleranzfenster). Die Prüfung, ob das Ticket tatsächlich räumlich und zeitlich gültig ist gem. der geltenden Tarifbestimmungen bzw. was im Fall eine gesperrten Tickets passiert obliegt der Software des Kontrollgerätes. 
 
 ## b) personalbediente Kontrolle
-Bei der personalbedienten Kontrolle wird mittels eines Kontrollgerätes die Identifikation vom Nutzermedium gelesen und damit eine Anfrage an den Ticketspeicher gestellt, der daraufhin alle als aktiv gekennzeichneten Tickets (Status OK oder GESPERRT) des Fahrgastes zurückliefert. Die Informationen, die im Ticketspeicher mit dem Verkauf abgelegt wurden, werden am Kontrollgerät sichtbar gemacht (z. B. "gültig bis 14:25 h", "gültig in Zone 3", ...). Die Prüfung, ob das Ticket tatsächlich räumlich und zeitlich gültig ist gem. der geltenden Tarifbestimmungen kann vom Kontrollgerät automatisch (siehe a) oder vom Prüfpersonal (als Sichtkontrolle) durchgeführt werden.
+Bei der personalbedienten Kontrolle wird mittels eines Kontrollgerätes die Identifikation vom Nutzermedium gelesen und damit eine Anfrage an den Ticketspeicher gestellt, der daraufhin alle Tickets zurückliefert, die zeitlich noch gültig sind oder kürzlich abgelaufen sind. Ein Ticket wird zurückgegeben, wenn die aktuelle Zeit im Gültigkeitszeitraum des Tickets liegt (plus eine vom Betreiber definierte Toleranzfenster). Die Informationen, die im Ticketspeicher mit dem Verkauf abgelegt wurden, werden am Kontrollgerät sichtbar gemacht (z. B. "gültig bis 14:25 h", "gültig in Zone 3", ...). Die Prüfung, ob das Ticket tatsächlich räumlich und zeitlich gültig ist gem. der geltenden Tarifbestimmungen kann vom Kontrollgerät automatisch (siehe a) oder vom Prüfpersonal (als Sichtkontrolle) durchgeführt werden.
 
 ## c) interoperable Kontrolle
 Bei Einsatz von Kreditkarten als Nutzermedium ist eine einheitliche Erzeugung von Transit-Tokens für alle teilnehmenden Hersteller zu vereinbaren.
@@ -83,7 +83,7 @@ sequenceDiagram
 # Anwendungsfall 3: Tickets aktualisieren / sperren
 
 ## a) Stammdatenänderung
-Tickets die bereits zum Ticketspeicher hinzugefügt wurden können aktualisiert werden. Dazu kann das Ticket über die Funktion **PATCH /tickets/{ticketRef}** im Ticketspeicher aktualisiert werden um beispielsweise die Gültigkeit eines Tickets zu verändern.
+Tickets die bereits zum Ticketspeicher hinzugefügt wurden können aktualisiert werden. Dazu kann das Ticket über die Funktion **PATCH /tickets/{ticketRef}** im Ticketspeicher aktualisiert werden. Der PATCH-Body enthält ein Objekt mit `status`, z. B. `{ "status": "blocked" }`.
 
 ## b) Sperre: Nutzer soll Ticket nicht mehr nutzen
 Hat ein Nutzer seine Rechnung nicht bezahlt oder soll er aus anderem Grund ein Ticket nicht mehr nutzen, so kann es gesperrt werden. Dazu kann die entsprechende Funktion genutzt werden, der das Verkehrsunternehmen seine OrgID sowie die eindeutige Referenz des Tickets und den Status "GESPERRT" übergibt. Entfällt der Sperrgrund, so kann der Status auf "OK" zurückgestellt werden.
@@ -109,7 +109,7 @@ sequenceDiagram
         Database-->>-Tickethub: Updated
         Tickethub-->>Client: 204 No Content
     else Ticket not found
-        Tickethub-->>-Client: 400 Bad Request
+        Tickethub-->>-Client: 404 Not Found
     end
 ```
 
@@ -129,9 +129,12 @@ sequenceDiagram
 
     Tickethub->>+Database: Find tickets by transitToken and type of given,<br>new transit Token and ccpOrgId from certificate
 
-    alt No Tickets Found
-        Database-->>Tickethub: No results
+    alt Token not found
+        Database-->>Tickethub: Token not found
         Tickethub-->>Client: 404 Not Found
+    else No Tickets Referenced
+        Database-->>Tickethub: No results
+        Tickethub-->>Client: 204 No Content
     else Tickets Found
         Database-->>-Tickethub: Matching tickets
         Tickethub->>+Database: Update transitToken to newTransitToken
@@ -163,7 +166,7 @@ sequenceDiagram
         Database-->>-Tickethub: Deleted database entry
         Tickethub-->>Client: 204 No Content
     else Ticket not found
-        Tickethub-->>-Client: 400 Bad Request
+        Tickethub-->>-Client: 404 Not Found
     end
 ```
 

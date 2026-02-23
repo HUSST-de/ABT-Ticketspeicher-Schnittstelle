@@ -1,7 +1,7 @@
 ## ABT/IDBT Ticketspeicher – Schnittstellen-Spezifikation
 
 **Status:** Official Release  
-**Version:** 1.0.0  
+**Version:** 1.0.1
 **Erstellt von:** **Arbeitsgruppe ABT / IDBT (by HUSST)** – weitere Informationen unter [husst.de](https://husst.de).  
 **Veröffentlichungsdatum:** 30.01.2026
 
@@ -40,7 +40,7 @@ Der Ticketspeicher ist im Kern eine **hochverfügbare Datenbank** mit einer schl
 
 Tickets werden im Ticketspeicher **immer** zusammen mit einer Referenz auf einen **Transit-Token** gespeichert. Ein Transit-Token besitzt einen **Token-Typ** (`tokenType`), der das jeweilige Token-Schema beschreibt.
 
-- **Aktueller Vorschlag (v1.0.0):** ausschließlich `iso24851`
+- **Aktueller Vorschlag (v1.0.1):** ausschließlich `iso24851`
 - **Wichtig:** **ISO 24851** ist zum Zeitpunkt dieser Version **nur ein Entwurf (Draft)**. Aus urheber- und nutzungsrechtlichen Gründen werden in dieser Spezifikation **keine weiteren inhaltlichen Details** zum Token-Schema `iso24851` angeführt.
 - **Ausblick:** In späteren Versionen können **weitere Transit-Token-Typen** ergänzt werden.
 
@@ -80,7 +80,7 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 
 - Tickets werden über einen **Transit-Token** adressiert.
 - Transit-Tokens sind **typisiert** (`tokenType` + `transitToken`).
-- In **v1.0.0** ist als `tokenType` ausschließlich **`iso24851`** vorgesehen.
+- In **v1.0.1** ist als `tokenType` ausschließlich **`iso24851`** vorgesehen.
 
 ### Endpunkte (Kurzliste)
 

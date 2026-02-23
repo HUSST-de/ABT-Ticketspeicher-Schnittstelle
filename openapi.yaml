@@ -9,11 +9,11 @@ info:
 
     Security model:
       - Create, update, and delete operations (POST, PATCH, DELETE) require OAuth2 JWT Bearer Tokens combined with mutual TLS (mTLS).
-      - View and Validation operations (GET) require OAuth2 JWT Bearer Tokens combined with mutual TLS (mTLS).
+      - View and Validation operations (GET) require OAuth2 JWT Bearer Tokens (certificate-bound). Client mTLS is not required for read operations.
 
       Based on the provided certificates, it is determined which data (e.g., for which CCP) can be accessed and written.
 
-  version: 1.0.0
+  version: 1.0.1
   contact:
     name: HUSST e.V.
     email: info@husst.de
@@ -47,6 +47,21 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/TicketDeposit'
+            example:
+              transitToken:
+                tokenType: "iso24851"
+                transitToken: "Y3VycmVudC10cmFuc2l0LXRva2Vu"
+              ticket:
+                ticketId:
+                  ccpOrgId: 35000
+                  ticketRef: "019bfc5a-6f92-7156-a2d4-3c9dc1f682dc"
+                depositedAt: "2025-12-01T10:00:00Z"
+                effectiveTime: "2025-12-08T12:00:00Z"
+                expirationTime: "2025-12-31T23:59:59Z"
+                status: "ok"
+                entitlement:
+                  contentType: "etiCore"
+                  content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
       responses:
         '201':
           description: Ticket created successfully.
@@ -83,7 +98,7 @@ paths:
     get:
       summary: Retrieve all tickets to a transit token
       description: >
-       Retrieve all tickets to a transit token. For inspection purposes, the `inspection` flag must be set to true and only the tickets valid today and recently expired are returned (within an implementation-defined tolerance window).
+       Retrieve all tickets to a transit token. For inspection purposes, the `inspection` flag must be set to true and only tickets that are still valid (time-based) or recently expired are returned. Tickets are returned if the current time is within the validity range plus an operator-defined tolerance window.
        Tickets whose tokenType matches the specified value and whose transitToken matches according to the rules of that tokenType are returned.
       operationId: getTickets
       tags:
@@ -118,6 +133,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Tickets'
+              example:
+                - ticketId:
+                    ccpOrgId: 35000
+                    ticketRef: "019bfc5a-6f92-7156-a2d4-3c9dc1f682dc"
+                  depositedAt: "2025-12-01T10:00:00Z"
+                  effectiveTime: "2025-12-08T12:00:00Z"
+                  expirationTime: "2025-12-31T23:59:59Z"
+                  status: "ok"
+                  entitlement:
+                    contentType: "etiCore"
+                    content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
           content:
@@ -156,7 +182,6 @@ paths:
         - Tickets
       security:
         - bearerAuth: [view:ticket]
-          mtls: []
       responses:
         '200':
           description: Ticket associated with the given ticket reference
@@ -164,6 +189,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Ticket'
+              example:
+                ticketId:
+                  ccpOrgId: 35000
+                  ticketRef: "019bfc5a-6f92-7156-a2d4-3c9dc1f682dc"
+                depositedAt: "2025-12-01T10:00:00Z"
+                effectiveTime: "2025-12-08T12:00:00Z"
+                expirationTime: "2025-12-31T23:59:59Z"
+                status: "ok"
+                entitlement:
+                  contentType: "etiCore"
+                  content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
           content:
@@ -178,6 +214,12 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Ticket not found
           content:
             application/json:
               schema:
@@ -210,7 +252,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TicketStatus'
+              $ref: '#/components/schemas/TicketUpdate'
+            example:
+              status: "blocked"
       responses:
         '204':
           description: Ticket updated successfully
@@ -228,6 +272,12 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Ticket not found
           content:
             application/json:
               schema:
@@ -265,6 +315,12 @@ paths:
                 $ref: '#/components/schemas/Problem'
         '403':
           description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Ticket not found
           content:
             application/json:
               schema:
@@ -309,7 +365,7 @@ paths:
                   transitToken: "bmV3LXRyYW5zaXQtVG9rZW4"
       responses:
         '204':
-          description: Transit token exchanged successfully
+          description: Transit token exchanged for tickets assigned to the requesting CCP OrgId, or no tickets referenced for previous token
         '400':
           description: Bad Request
           content:
@@ -329,7 +385,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
         '404':
-          description: TransitToken not found
+          description: Transit token not found
           content:
             application/json:
               schema:
@@ -412,6 +468,14 @@ components:
     TicketStatus:
       type: string
       enum: ["ok", "terminated", "blocked"]
+    TicketUpdate:
+      type: object
+      description: Update payload. Currently, only status is possible. If extended, required must be adjusted and at least one attribute must be present.
+      required:
+        - status
+      properties:
+        status:
+          $ref: '#/components/schemas/TicketStatus'
     Entitlement:
       type: object
       description: Stores data about the entitlement that an inspection device uses for validation.
@@ -486,6 +550,12 @@ components:
         instance:
           type: string
           format: uri
+      example:
+        type: "https://api.example.com/problems/insufficient-permissions"
+        title: "Insufficient permissions"
+        status: 403
+        detail: "The ticket cannot be stored because the ccpOrgId does not match the OrgId from the client certificate."
+        instance: "/tickets"
 
     
   securitySchemes:
@@ -495,6 +565,7 @@ components:
       bearerFormat: JWT
       description: |-
         OAuth2 Bearer Token (JWT) with certificate binding per RFC 8705.
+        Client certificate binding is required for write operations. Read operations validate the certificate binding claim but do not require client mTLS.
 
         Required claims:
         - `cnf.x5t#S256`: SHA-256 thumbprint of the client certificate (base64url-encoded)
