@@ -13,7 +13,7 @@ info:
 
       Based on the provided certificates, it is determined which data (e.g., for which CCP) can be accessed and written.
 
-  version: 1.0.0
+  version: 1.0.1
   contact:
     name: HUSST e.V.
     email: info@husst.de
