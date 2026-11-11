@@ -60,7 +60,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCore"
+                  contentType: "etiCORE-TLV-EFS"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
       responses:
         '201':
@@ -100,6 +100,7 @@ paths:
       description: >
        Retrieve all tickets to a transit token. For inspection purposes, the `inspection` flag must be set to true and only tickets that are still valid (time-based) or recently expired are returned. Tickets are returned if the current time is within the validity range plus an operator-defined tolerance window.
        Tickets whose tokenType matches the specified value and whose transitToken matches according to the rules of that tokenType are returned.
+       When a returned ticket is passed to an inspection device, its `entitlement.contentType` must be forwarded with `entitlement.content` so the device can select the appropriate decoder.
       operationId: getTickets
       tags:
         - Tickets
@@ -142,7 +143,7 @@ paths:
                   expirationTime: "2025-12-31T23:59:59Z"
                   status: "ok"
                   entitlement:
-                    contentType: "etiCore"
+                    contentType: "etiCORE-TLV-EFS"
                     content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -198,7 +199,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCore"
+                  contentType: "etiCORE-TLV-EFS"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -406,9 +407,13 @@ components:
       description: URL-safe Base64 encoding ([RFC 4648 5](https://datatracker.ietf.org/doc/html/rfc4648#section-5)).
     TokenType:
       type: string
-      description: >
+      description: |
         The type of transit token.
-      enum: ["iso24851"]
+        - `iso24851`: ISO 24851 transit token.
+        - `girocard`: girocard token.
+        - `appInstID`: Application instance ID of a KA or etiCORE card.
+        - `sceID`: SCE ID of a Motics-secured app.
+      enum: ["iso24851", "girocard", "appInstID", "sceID"]
       default: "iso24851"
     TypedTransitToken:
       type: object
@@ -487,10 +492,20 @@ components:
           type: string
           default: "unspecified"
           description: >
-            The serialization form of the entitlement in the `content` field. Defines how the entitlement data is encoded.
-            While it is not necessary to specify the format, it is highly recommended to store it to allow proper decoding by inspection devices.
-          enum: ["KA", "etiCore", "UIC", "unspecified"]
-          example: "KA"
+            Identifies the serialization format of the entitlement in `content`.
+            Use the most specific format known when storing a ticket. The values `KA` and `etiCore` are retained for existing integrations.
+            Forward this value together with `content` when passing the ticket to an inspection device.
+          enum:
+            - "KA"
+            - "etiCore"
+            - "UIC"
+            - "unspecified"
+            - "KA-TLV-EFS"
+            - "KA-Ref-EFS"
+            - "KA-Stat-Ber"
+            - "etiCORE-TLV-EFS"
+            - "etiCORE-StatBer"
+          example: "KA-TLV-EFS"
         content:
           type: string
           format: byte
