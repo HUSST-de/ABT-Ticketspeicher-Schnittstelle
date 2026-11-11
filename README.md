@@ -40,7 +40,10 @@ Der Ticketspeicher ist im Kern eine **hochverfügbare Datenbank** mit einer schl
 
 Tickets werden im Ticketspeicher **immer** zusammen mit einer Referenz auf einen **Transit-Token** gespeichert. Ein Transit-Token besitzt einen **Token-Typ** (`tokenType`), der das jeweilige Token-Schema beschreibt.
 
-- **Aktueller Vorschlag (v1.0.1):** ausschließlich `iso24851`
+- `iso24851` (Standardwert)
+- `girocard` für Girocard-Token
+- `appInstID` für die App-Instanz-ID einer KA- oder etiCORE-Karte
+- `sceID` für die SCE-ID einer Motics-gesicherten App
 - **Wichtig:** **ISO 24851** ist zum Zeitpunkt dieser Version **nur ein Entwurf (Draft)**. Aus urheber- und nutzungsrechtlichen Gründen werden in dieser Spezifikation **keine weiteren inhaltlichen Details** zum Token-Schema `iso24851` angeführt.
 - **Ausblick:** In späteren Versionen können **weitere Transit-Token-Typen** ergänzt werden.
 
@@ -80,7 +83,6 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 
 - Tickets werden über einen **Transit-Token** adressiert.
 - Transit-Tokens sind **typisiert** (`tokenType` + `transitToken`).
-- In **v1.0.1** ist als `tokenType` ausschließlich **`iso24851`** vorgesehen.
 
 ### Endpunkte (Kurzliste)
 
@@ -97,7 +99,7 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 Ein Ticket besteht aus:
 
 - **strukturierte Daten** (u. a. `status`, `effectiveTime`, `expirationTime`, `ticketId`)
-- **Container („Entitlement“)**: uninterpretiert im Ticketspeicher; erlaubt beliebige, abgestimmte Formate (z. B. VDV-KA/VDV-ETS, UIC, etiCore, …)
+- **Container („Entitlement“)**: uninterpretiert im Ticketspeicher; erlaubt beliebige, abgestimmte Formate (z. B. VDV-KA/VDV-ETS, UIC, etiCORE). Bei der Übermittlung an das Kontrollgerät wird `entitlement.contentType` zusammen mit `entitlement.content` mitgegeben.
 
 ---
 
@@ -147,7 +149,7 @@ flowchart LR
 | Ticketreferenz | Ticket reference | Referenz/Nummer einer Berechtigung innerhalb einer Organisation |
 | Ticket-Container | Ticket container | Uninterpretiertes Payload-Feld `entitlement` für Ticketdaten (formatfrei/vereinbart) |
 | Strukturierte Daten | Structured data | Metadaten für Filterung/Autorisierung (Status, Zeiten, IDs, …) |
-| Transit-Token | Transit token | Typisierter Token zur Ticketzuordnung (`tokenType` + Tokenwert); aktuell nur `iso24851` |
+| Transit-Token | Transit token | Typisierter Token zur Ticketzuordnung (`tokenType` + Tokenwert) |
 | Payment-Token | Payment token | Zahlungsbezogener Token (z. B. Kreditkarte); **nicht** direkt im Ticketspeicher |
 | Token-Typ | Token type | Schema/Regelwerk für Token-Matching (z. B. `iso24851`) |
 | Mandant / OrgId | Tenant / OrgId | Organisationskennung (VDV Org-ID) zur Mandantentrennung |

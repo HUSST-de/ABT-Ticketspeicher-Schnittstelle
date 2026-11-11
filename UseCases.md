@@ -52,7 +52,7 @@ sequenceDiagram
 ```
 
 # Anwendungsfall 2: Kontrolle
-Für die Kontrolle wird der Ticketspeicher ausgelesen über die Funktion **GET /tickets**. Bei der Kontrolle sind verschiedene Fälle zu unterscheiden
+Für die Kontrolle wird der Ticketspeicher über **GET /tickets** ausgelesen. Bei der Übermittlung eines Tickets an das Kontrollgerät muss `entitlement.contentType` zusammen mit `entitlement.content` mitgegeben werden, damit das Gerät das Format erkennen und die Berechtigung korrekt dekodieren kann.
 
 ## a) automatische Kontrolle
 Die automatische Kontrolle findet an einer Stele oder einem anderen statischen oder mobilen Kontrollgerät statt. Sie öffnet z. B. automatisch ein Tor (Gate) oder zeigt eine grüne oder rote Lampe an. Dazu wird die Identifikation vom Nutzermedium gelesen und damit eine Anfrage an den Ticketspeicher gestellt, der daraufhin alle Tickets zurückliefert, die zeitlich noch gültig sind oder kürzlich abgelaufen sind. Ein Ticket wird zurückgegeben, wenn die aktuelle Zeit im Gültigkeitszeitraum des Tickets liegt (plus eine vom Betreiber definierte Toleranzfenster). Die Prüfung, ob das Ticket tatsächlich räumlich und zeitlich gültig ist gem. der geltenden Tarifbestimmungen bzw. was im Fall eine gesperrten Tickets passiert obliegt der Software des Kontrollgerätes. 
@@ -72,7 +72,7 @@ sequenceDiagram
     participant Tickethub as Ticket hub
     participant Database@{"type":"database"}
 
-    Client->>+Tickethub: GET /tickets?transitToken=...&inspection=true
+    Client->>+Tickethub: GET /tickets?transitToken=...&tokenType=...&inspection=true
     note over Client,Tickethub: Authentication flow successful<br>and oauth2 scope matches
 
     Tickethub->>+Database: Query relevant tickets for inspection

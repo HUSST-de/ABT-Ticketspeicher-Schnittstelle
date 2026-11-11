@@ -11,7 +11,7 @@ The HUSST Tickethub API provides secure management of tickets associated with tr
 
 The API supports different transit token schemes. Each transit token is always handled together with an explicit `tokenType`.
 
-The default and currently supported token type is `iso24851`. Support for additional token types must be requested and approved via this repository.
+Supported token types are `iso24851` (default), `girocard` for girocard tokens, `appInstID` for the application instance ID of a KA or etiCORE card, and `sceID` for the SCE ID of a Motics-secured app. Support for additional token types must be requested and approved via this repository.
 
 A transit token is represented as a **typed transit token**, consisting of:
 - `tokenType`: Identifies the token scheme
@@ -59,8 +59,8 @@ All fields except `status` are immutable.
 The container is the part of the ticket that allows the CCP to store entitlement data in any previously agreed format.
 It may contain information such as spatial validity or complex temporal rules that are not interpreted by the Tickethub itself.
 
-The container format SHOULD be indicated using the `contentType` field.
-It is recommended to use well-known ticket formats to ensure compatibility with inspection devices.
+The container includes both `contentType` and `content`. Use the most specific known format as the `contentType`.
+When passing a ticket to an inspection device, the sender must forward `entitlement.contentType` together with `entitlement.content` so the device can select the appropriate decoder.
 
 ## API Endpoints
 
@@ -127,7 +127,7 @@ sequenceDiagram
   "expirationTime": "2025-12-31T23:59:59Z",
   "status": "ok",
   "entitlement": {
-    "contentType": "etiCore",
+    "contentType": "etiCORE-TLV-EFS",
     "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
   }
 }
@@ -137,8 +137,13 @@ sequenceDiagram
 
 | Type | Description |
 |------|-------------|
-| `KA` | VDV-KA format |
-| `etiCore` | etiCore format |
+| `KA-TLV-EFS` | VDV-KA TLV-encoded electronic ticket (EFS) |
+| `KA-Ref-EFS` | VDV-KA reference EFS |
+| `KA-Stat-Ber` | VDV-KA static entitlement |
+| `etiCORE-TLV-EFS` | etiCORE TLV-encoded EFS with the etiCORE structure |
+| `etiCORE-StatBer` | etiCORE static entitlement with the same structure as `etiCORE-TLV-EFS` |
+| `KA` | Generic VDV-KA format, retained for existing integrations |
+| `etiCore` | Generic etiCORE format, retained for existing integrations |
 | `UIC` | UIC format |
 | `unspecified` | Unspecified format (default) |
 
