@@ -27,7 +27,7 @@ For `iso24851`, matching rules depend on the tokenization method defined by the 
 ## Ticket
 
 A ticket is a composite of structured data that is available for interpretation for the ticket hub and a ticket container which is not interpreted by the ticket hub. It allows to filter the tickets for relevance when an inspection requests tickets for inspection.
-The ticket container's format can be freely chosen by the different parties (CCP, SO).
+The ticket container uses one of the [supported entitlement formats](#entitlement-content-types).
 
 ### Structured data
 
@@ -56,10 +56,10 @@ All fields except `status` are immutable.
 
 ### Container
 
-The container is the part of the ticket that allows the CCP to store entitlement data in any previously agreed format.
+The container is the part of the ticket that allows the CCP to store a complete signed entitlement or its unsigned entitlement data.
 It may contain information such as spatial validity or complex temporal rules that are not interpreted by the Tickethub itself.
 
-The container includes both `contentType` and `content`. Use the most specific known format as the `contentType`.
+The container includes both `contentType` and `content`. Set `contentType` to the specific format of the payload.
 When passing a ticket to an inspection device, the sender must forward `entitlement.contentType` together with `entitlement.content` so the device can select the appropriate decoder.
 
 ## API Endpoints
@@ -127,7 +127,7 @@ sequenceDiagram
   "expirationTime": "2025-12-31T23:59:59Z",
   "status": "ok",
   "entitlement": {
-    "contentType": "etiCORE-TLV-EFS",
+    "contentType": "etiCORE-SeparateDatenBer-TLV",
     "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
   }
 }
@@ -135,17 +135,16 @@ sequenceDiagram
 
 ### Entitlement Content Types
 
-| Type | Description |
-|------|-------------|
-| `KA-TLV-EFS` | VDV-KA TLV-encoded electronic ticket (EFS) |
-| `KA-Ref-EFS` | VDV-KA reference EFS |
-| `KA-Stat-Ber` | VDV-KA static entitlement |
-| `etiCORE-TLV-EFS` | etiCORE TLV-encoded EFS with the etiCORE structure |
-| `etiCORE-StatBer` | etiCORE static entitlement with the same structure as `etiCORE-TLV-EFS` |
-| `KA` | Generic VDV-KA format, retained for existing integrations |
-| `etiCore` | Generic etiCORE format, retained for existing integrations |
-| `UIC` | UIC format |
-| `unspecified` | Unspecified format (default) |
+| Type | Payload |
+|------|---------|
+| `UIC-FCB` | Unsigned UIC FCB entitlement data |
+| `UIC-9189` | Complete signed UIC 918.9 entitlement |
+| `UIC-Dosipas` | Complete signed UIC DOSIPAS entitlement |
+| `KA-SeparateDatenBer-TLV` | Unsigned VDV-KA entitlement data in TLV format |
+| `KA-SeparateDatenBer-REF` | Unsigned VDV-KA entitlement data in REF format |
+| `etiCORE-SeparateDatenBer-TLV` | Unsigned etiCORE entitlement data in TLV format |
+| `KA-StatBer` | Complete signed VDV-KA static entitlement |
+| `etiCORE-StatBer` | Complete signed etiCORE static entitlement |
 
 ### OrgId
 

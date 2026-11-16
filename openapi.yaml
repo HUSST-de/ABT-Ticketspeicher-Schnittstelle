@@ -60,7 +60,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCORE-TLV-EFS"
+                  contentType: "etiCORE-SeparateDatenBer-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
       responses:
         '201':
@@ -143,7 +143,7 @@ paths:
                   expirationTime: "2025-12-31T23:59:59Z"
                   status: "ok"
                   entitlement:
-                    contentType: "etiCORE-TLV-EFS"
+                    contentType: "etiCORE-SeparateDatenBer-TLV"
                     content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -199,7 +199,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCORE-TLV-EFS"
+                  contentType: "etiCORE-SeparateDatenBer-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -490,22 +490,23 @@ components:
       properties:
         contentType:
           type: string
-          default: "unspecified"
-          description: >
-            Identifies the serialization format of the entitlement in `content`.
-            Use the most specific format known when storing a ticket. The values `KA` and `etiCore` are retained for existing integrations.
+          description: |
+            Identifies the format of the entitlement payload in `content`.
+
+            - Complete signed entitlement: `UIC-9189`, `UIC-Dosipas`, `KA-StatBer`, `etiCORE-StatBer`.
+            - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `etiCORE-SeparateDatenBer-TLV`.
+
             Forward this value together with `content` when passing the ticket to an inspection device.
           enum:
-            - "KA"
-            - "etiCore"
-            - "UIC"
-            - "unspecified"
-            - "KA-TLV-EFS"
-            - "KA-Ref-EFS"
-            - "KA-Stat-Ber"
-            - "etiCORE-TLV-EFS"
+            - "UIC-FCB"
+            - "UIC-9189"
+            - "UIC-Dosipas"
+            - "KA-SeparateDatenBer-TLV"
+            - "KA-SeparateDatenBer-REF"
+            - "etiCORE-SeparateDatenBer-TLV"
+            - "KA-StatBer"
             - "etiCORE-StatBer"
-          example: "KA-TLV-EFS"
+          example: "KA-SeparateDatenBer-TLV"
         content:
           type: string
           format: byte

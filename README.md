@@ -99,7 +99,7 @@ Die wichtigsten Use Cases (fachlich), Details in [UseCases.md](UseCases.md):
 Ein Ticket besteht aus:
 
 - **strukturierte Daten** (u. a. `status`, `effectiveTime`, `expirationTime`, `ticketId`)
-- **Container („Entitlement“)**: uninterpretiert im Ticketspeicher; erlaubt beliebige, abgestimmte Formate (z. B. VDV-KA/VDV-ETS, UIC, etiCORE). Bei der Übermittlung an das Kontrollgerät wird `entitlement.contentType` zusammen mit `entitlement.content` mitgegeben.
+- **Container („Entitlement“)**: Der Ticketspeicher speichert den Container uninterpretiert. `entitlement.contentType` kennzeichnet das konkrete Format einer vollständig signierten Berechtigung oder der unsignierten Berechtigungsdaten. Bei der Übermittlung an das Kontrollgerät wird `entitlement.contentType` zusammen mit `entitlement.content` mitgegeben.
 
 ---
 
