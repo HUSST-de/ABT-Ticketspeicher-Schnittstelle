@@ -60,7 +60,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCORE-SeparateDatenBer-TLV"
+                  contentType: "eitCORE-ProductParameters-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
       responses:
         '201':
@@ -143,7 +143,7 @@ paths:
                   expirationTime: "2025-12-31T23:59:59Z"
                   status: "ok"
                   entitlement:
-                    contentType: "etiCORE-SeparateDatenBer-TLV"
+                    contentType: "eitCORE-ProductParameters-TLV"
                     content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -199,7 +199,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "etiCORE-SeparateDatenBer-TLV"
+                  contentType: "eitCORE-ProductParameters-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -494,7 +494,7 @@ components:
             Identifies the format of the entitlement payload in `content`.
 
             - Complete signed entitlement: `UIC-9189`, `UIC-Dosipas`, `KA-StatBer`, `etiCORE-StatBer`.
-            - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `etiCORE-SeparateDatenBer-TLV`.
+            - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `eitCORE-ProductParameters-TLV`.
 
             Forward this value together with `content` when passing the ticket to an inspection device.
           enum:
@@ -503,7 +503,7 @@ components:
             - "UIC-Dosipas"
             - "KA-SeparateDatenBer-TLV"
             - "KA-SeparateDatenBer-REF"
-            - "etiCORE-SeparateDatenBer-TLV"
+            - "eitCORE-ProductParameters-TLV"
             - "KA-StatBer"
             - "etiCORE-StatBer"
           example: "KA-SeparateDatenBer-TLV"
