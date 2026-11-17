@@ -11,7 +11,7 @@ The HUSST Tickethub API provides secure management of tickets associated with tr
 
 The API supports different transit token schemes. Each transit token is always handled together with an explicit `tokenType`.
 
-The default and currently supported token type is `iso24851`. Support for additional token types must be requested and approved via this repository.
+Supported token types are `iso24851` (default), `girocard` for girocard tokens, `appInstID` for the application instance ID of a KA or etiCORE card, and `sceID` for the SCE ID of a Motics-secured app. Support for additional token types must be requested and approved via this repository.
 
 A transit token is represented as a **typed transit token**, consisting of:
 - `tokenType`: Identifies the token scheme
@@ -27,7 +27,7 @@ For `iso24851`, matching rules depend on the tokenization method defined by the 
 ## Ticket
 
 A ticket is a composite of structured data that is available for interpretation for the ticket hub and a ticket container which is not interpreted by the ticket hub. It allows to filter the tickets for relevance when an inspection requests tickets for inspection.
-The ticket container's format can be freely chosen by the different parties (CCP, SO).
+The ticket container uses one of the [supported entitlement formats](#entitlement-content-types).
 
 ### Structured data
 
@@ -56,11 +56,11 @@ All fields except `status` are immutable.
 
 ### Container
 
-The container is the part of the ticket that allows the CCP to store entitlement data in any previously agreed format.
+The container is the part of the ticket that allows the CCP to store a complete signed entitlement or its unsigned entitlement data.
 It may contain information such as spatial validity or complex temporal rules that are not interpreted by the Tickethub itself.
 
-The container format SHOULD be indicated using the `contentType` field.
-It is recommended to use well-known ticket formats to ensure compatibility with inspection devices.
+The container includes both `contentType` and `content`. Set `contentType` to the specific format of the payload if known. Use `unspecified` when the format is unknown.
+When passing a ticket to an inspection device, the sender must forward `entitlement.contentType` together with `entitlement.content` so the device can select the appropriate decoder.
 
 ## API Endpoints
 
@@ -127,7 +127,7 @@ sequenceDiagram
   "expirationTime": "2025-12-31T23:59:59Z",
   "status": "ok",
   "entitlement": {
-    "contentType": "etiCore",
+    "contentType": "etiCORE-ProductParameters-TLV",
     "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
   }
 }
@@ -135,11 +135,16 @@ sequenceDiagram
 
 ### Entitlement Content Types
 
-| Type | Description |
-|------|-------------|
-| `KA` | VDV-KA format |
-| `etiCore` | etiCore format |
-| `UIC` | UIC format |
+| Type | Payload |
+|------|---------|
+| `UIC-FCB` | Unsigned UIC FCB entitlement data |
+| `UIC-9189` | Complete signed UIC 918.9 entitlement |
+| `UIC-Dosipas` | Complete signed UIC DOSIPAS entitlement |
+| `KA-SeparateDatenBer-TLV` | Unsigned VDV-KA entitlement data in TLV format |
+| `KA-SeparateDatenBer-REF` | Unsigned VDV-KA entitlement data in REF format |
+| `etiCORE-ProductParameters-TLV` | Unsigned etiCORE product parameters in TLV format |
+| `KA-StatBer` | Complete signed VDV-KA static entitlement |
+| `etiCORE-StaticEntitlement` | Complete signed etiCORE static entitlement |
 | `unspecified` | Unspecified format (default) |
 
 ### OrgId
