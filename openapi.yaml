@@ -490,12 +490,14 @@ components:
       properties:
         contentType:
           type: string
+          default: "unspecified"
           description: |
             Identifies the format of the entitlement payload in `content`.
 
             - Complete signed entitlement: `UIC-9189`, `UIC-Dosipas`, `KA-StatBer`, `etiCORE-StaticEntitlement`.
             - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `etiCORE-ProductParameters-TLV`.
 
+            Use `unspecified` when the format is unknown.
             Forward this value together with `content` when passing the ticket to an inspection device.
           enum:
             - "UIC-FCB"
@@ -506,6 +508,7 @@ components:
             - "etiCORE-ProductParameters-TLV"
             - "KA-StatBer"
             - "etiCORE-StaticEntitlement"
+            - "unspecified"
           example: "KA-SeparateDatenBer-TLV"
         content:
           type: string

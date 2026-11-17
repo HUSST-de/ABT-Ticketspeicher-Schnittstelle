@@ -59,7 +59,7 @@ All fields except `status` are immutable.
 The container is the part of the ticket that allows the CCP to store a complete signed entitlement or its unsigned entitlement data.
 It may contain information such as spatial validity or complex temporal rules that are not interpreted by the Tickethub itself.
 
-The container includes both `contentType` and `content`. Set `contentType` to the specific format of the payload.
+The container includes both `contentType` and `content`. Set `contentType` to the specific format of the payload if known. Use `unspecified` when the format is unknown.
 When passing a ticket to an inspection device, the sender must forward `entitlement.contentType` together with `entitlement.content` so the device can select the appropriate decoder.
 
 ## API Endpoints
@@ -145,6 +145,7 @@ sequenceDiagram
 | `etiCORE-ProductParameters-TLV` | Unsigned etiCORE product parameters in TLV format |
 | `KA-StatBer` | Complete signed VDV-KA static entitlement |
 | `etiCORE-StaticEntitlement` | Complete signed etiCORE static entitlement |
+| `unspecified` | Unspecified format (default) |
 
 ### OrgId
 
