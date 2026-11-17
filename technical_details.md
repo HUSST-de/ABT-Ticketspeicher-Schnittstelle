@@ -127,7 +127,7 @@ sequenceDiagram
   "expirationTime": "2025-12-31T23:59:59Z",
   "status": "ok",
   "entitlement": {
-    "contentType": "eitCORE-ProductParameters-TLV",
+    "contentType": "etiCORE-ProductParameters-TLV",
     "content": "d2F0Y2g/dj14dkZaam81UGdHMA=="
   }
 }
@@ -142,9 +142,9 @@ sequenceDiagram
 | `UIC-Dosipas` | Complete signed UIC DOSIPAS entitlement |
 | `KA-SeparateDatenBer-TLV` | Unsigned VDV-KA entitlement data in TLV format |
 | `KA-SeparateDatenBer-REF` | Unsigned VDV-KA entitlement data in REF format |
-| `eitCORE-ProductParameters-TLV` | Unsigned etiCORE product parameters in TLV format |
+| `etiCORE-ProductParameters-TLV` | Unsigned etiCORE product parameters in TLV format |
 | `KA-StatBer` | Complete signed VDV-KA static entitlement |
-| `etiCORE-StatBer` | Complete signed etiCORE static entitlement |
+| `etiCORE-StaticEntitlement` | Complete signed etiCORE static entitlement |
 
 ### OrgId
 

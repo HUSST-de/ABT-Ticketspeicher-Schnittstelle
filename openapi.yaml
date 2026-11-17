@@ -60,7 +60,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "eitCORE-ProductParameters-TLV"
+                  contentType: "etiCORE-ProductParameters-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
       responses:
         '201':
@@ -143,7 +143,7 @@ paths:
                   expirationTime: "2025-12-31T23:59:59Z"
                   status: "ok"
                   entitlement:
-                    contentType: "eitCORE-ProductParameters-TLV"
+                    contentType: "etiCORE-ProductParameters-TLV"
                     content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -199,7 +199,7 @@ paths:
                 expirationTime: "2025-12-31T23:59:59Z"
                 status: "ok"
                 entitlement:
-                  contentType: "eitCORE-ProductParameters-TLV"
+                  contentType: "etiCORE-ProductParameters-TLV"
                   content: "d2F0Y2g/dj14dkZaam81UGdHMA=="
         '400':
           description: Bad Request
@@ -493,8 +493,8 @@ components:
           description: |
             Identifies the format of the entitlement payload in `content`.
 
-            - Complete signed entitlement: `UIC-9189`, `UIC-Dosipas`, `KA-StatBer`, `etiCORE-StatBer`.
-            - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `eitCORE-ProductParameters-TLV`.
+            - Complete signed entitlement: `UIC-9189`, `UIC-Dosipas`, `KA-StatBer`, `etiCORE-StaticEntitlement`.
+            - Unsigned entitlement data: `UIC-FCB`, `KA-SeparateDatenBer-TLV`, `KA-SeparateDatenBer-REF`, `etiCORE-ProductParameters-TLV`.
 
             Forward this value together with `content` when passing the ticket to an inspection device.
           enum:
@@ -503,9 +503,9 @@ components:
             - "UIC-Dosipas"
             - "KA-SeparateDatenBer-TLV"
             - "KA-SeparateDatenBer-REF"
-            - "eitCORE-ProductParameters-TLV"
+            - "etiCORE-ProductParameters-TLV"
             - "KA-StatBer"
-            - "etiCORE-StatBer"
+            - "etiCORE-StaticEntitlement"
           example: "KA-SeparateDatenBer-TLV"
         content:
           type: string
